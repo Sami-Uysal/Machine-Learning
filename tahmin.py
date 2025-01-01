@@ -67,6 +67,9 @@ class TahminDialog(QDialog):
         self.tahmin_sonuc = QLabel("Tahmin Sonucu: ")
         layout.addWidget(self.tahmin_sonuc)
 
+        self.proba_sonuc = QLabel("Tahmin Olasılıkları: ")
+        layout.addWidget(self.proba_sonuc)
+
         self.tahmin_buton = QPushButton("Tahmin Yap")
         self.tahmin_buton.clicked.connect(self.tahminYap)
         layout.addWidget(self.tahmin_buton)
@@ -136,6 +139,7 @@ class TahminDialog(QDialog):
 
         # Modeli kullanarak tahmin yapıyoruz
         tahmin = self.model.predict(girdi)
+        tahmin_proba = self.model.predict_proba(girdi)
 
         # Modelin tahminini kontrol ediyoruz (R ya da Maden)
         if tahmin[0] == 'R':
@@ -144,6 +148,10 @@ class TahminDialog(QDialog):
             sonuc = "Bu Nesne Maden"
 
         self.tahmin_sonuc.setText(f"Tahmin Sonucu: {sonuc}")
+
+        # Tahmin olasılıklarını gösteriyoruz
+        proba_text = "Olasılıklar: " + ", ".join([f"{p:.2f}" for p in tahmin_proba[0]])
+        self.proba_sonuc.setText(proba_text)
 
 
 class TahminBolumu(QWidget):
@@ -168,8 +176,7 @@ class TahminBolumu(QWidget):
 
     def showPredictionDialog(self):
         if self.model is None:
-            QMessageBox.warning(self, "Model Eksik", "Lütfen önce bir model eğitin.")
+            QMessageBox.warning(self, "Model Yok", "Önce bir model eğitilmelidir.")
             return
-
-        self.dialog = TahminDialog(self.model, self)
-        self.dialog.exec_()
+        dialog = TahminDialog(self.model, self)
+        dialog.exec_()
